@@ -21,8 +21,10 @@
       align-items: center;
       padding: 20px;
       color: #1c1c1e;
+      cursor: default;
     }
 
+    /* ===== CARD ===== */
     .container {
       max-width: 780px;
       width: 100%;
@@ -31,8 +33,13 @@
       padding: 32px 28px 28px;
       box-shadow: 0 8px 40px rgba(0, 0, 0, 0.04), 0 2px 8px rgba(0, 0, 0, 0.02);
       border: 1px solid #f0f0f2;
-      transition: transform 0.06s ease-out;
+      
+      /* ===== HEAVY CURSOR FOLLOW ===== */
+      transition: transform 0.08s cubic-bezier(0.2, 0.9, 0.4, 1);
       will-change: transform;
+      
+      /* initial position */
+      transform: translate(0px, 0px) rotate(0deg);
     }
 
     /* ===== MUSIC PLAYER ===== */
@@ -56,7 +63,7 @@
       width: 100%;
       height: 72px;
       border: none;
-      pointer-events: none; /* prevent clicking the iframe directly */
+      pointer-events: none;
     }
 
     .music-overlay {
@@ -435,7 +442,7 @@
 <body>
 
 <div class="container" id="card">
-  <!-- ===== MUSIC PLAYER with click overlay ===== -->
+  <!-- ===== MUSIC PLAYER ===== -->
   <div class="music-wrap" id="musicWrap">
     <iframe id="musicIframe" 
       src="https://www.youtube.com/embed/jViw4WrCHIo?enablejsapi=1" 
@@ -453,7 +460,7 @@
   <!-- ===== HEADER ===== -->
   <div class="header">
     <div class="logo">
-      <span class="accent">◆</span> vyzee <span class="badge">auto-recovery</span>
+      <span class="accent">◆</span> vyzee <span class="badge">heavy</span>
     </div>
     <div><span class="speed" id="speedDisplay">⚡ 0/s</span></div>
   </div>
@@ -526,9 +533,7 @@
     const musicIframe = document.getElementById('musicIframe');
 
     musicWrap.addEventListener('click', function() {
-      // Remove overlay
       musicOverlay.classList.add('hidden');
-      // Reload iframe with autoplay
       const src = musicIframe.src;
       musicIframe.src = '';
       musicIframe.src = src + '&autoplay=1';
@@ -603,25 +608,73 @@
       recoveryCountEl.textContent = `🔄 recoveries: ${recoveryCount}`;
     }
 
-    // ----- Cursor follower -----
-    let mouseX = 0, mouseY = 0;
-    let isHovering = false;
+    // ============================================================
+    // ===== HEAVY CURSOR FOLLOWER – leans toward cursor =====
+    // ============================================================
+    let mouseX = window.innerWidth / 2;
+    let mouseY = window.innerHeight / 2;
+    let currentX = 0;
+    let currentY = 0;
+    let currentRotateX = 0;
+    let currentRotateY = 0;
+    let targetX = 0;
+    let targetY = 0;
+    let targetRotateX = 0;
+    let targetRotateY = 0;
+
+    // Track mouse position
     document.addEventListener('mousemove', (e) => {
       mouseX = e.clientX;
       mouseY = e.clientY;
-      if (!isHovering) isHovering = true;
     });
 
+    // Also track touch for mobile
+    document.addEventListener('touchmove', (e) => {
+      const touch = e.touches[0];
+      if (touch) {
+        mouseX = touch.clientX;
+        mouseY = touch.clientY;
+      }
+    }, { passive: true });
+
+    // Smooth animation loop
     function updateCardPosition() {
-      if (!isHovering) return;
       const rect = card.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
-      const dx = (mouseX - cx) / window.innerWidth;
-      const dy = (mouseY - cy) / window.innerHeight;
-      card.style.transform = `translate(${dx * 6}px, ${dy * 6}px)`;
+      const cardCenterX = rect.left + rect.width / 2;
+      const cardCenterY = rect.top + rect.height / 2;
+
+      // Calculate distance from mouse to card center (normalized)
+      const dx = (mouseX - cardCenterX) / window.innerWidth;
+      const dy = (mouseY - cardCenterY) / window.innerHeight;
+
+      // HEAVY feel: limited movement + rotation
+      // Max translation: 12px, max rotation: 3deg
+      const maxTranslate = 14;
+      const maxRotate = 3.5;
+
+      targetX = dx * maxTranslate;
+      targetY = dy * maxTranslate;
+      targetRotateY = dx * maxRotate; // rotate toward mouse horizontally
+      targetRotateX = -dy * maxRotate; // rotate toward mouse vertically
+
+      // Smooth interpolation (like inertia / heaviness)
+      const damping = 0.12; // lower = heavier/slower
+      currentX += (targetX - currentX) * damping;
+      currentY += (targetY - currentY) * damping;
+      currentRotateX += (targetRotateX - currentRotateX) * damping;
+      currentRotateY += (targetRotateY - currentRotateY) * damping;
+
+      // Apply transform
+      card.style.transform = `
+        translate(${currentX}px, ${currentY}px)
+        rotateX(${currentRotateX}deg)
+        rotateY(${currentRotateY}deg)
+      `;
+
       requestAnimationFrame(updateCardPosition);
     }
+
+    // Start the follower
     updateCardPosition();
 
     // ----- Mode switching -----
@@ -721,7 +774,6 @@
       resultBox.appendChild(item);
       resultBox.scrollTop = resultBox.scrollHeight;
 
-      const wasRunning = isRunning;
       const mode = currentMode;
       
       if (isRunning) {
@@ -999,27 +1051,4 @@
         item.style.background = '#f0f8f0';
         item.style.justifyContent = 'center';
         item.style.color = '#1e7a3a';
-        item.textContent = `🔄 auto-recovered from rate limit · resuming sniping...`;
-        resultBox.innerHTML = '';
-        resultBox.appendChild(item);
-        
-        setTimeout(() => {
-          startGeneration();
-        }, 1000);
-      }
-    }
-
-    // ----- Events -----
-    startBtn.addEventListener('click', startGeneration);
-    stopBtn.addEventListener('click', stopGeneration);
-    clearBtn.addEventListener('click', clearDatabase);
-
-    // ----- Init -----
-    setActiveMode('words');
-    updateDBStatus();
-    setStatus('idle', 'idle');
-    checkAutoRestart();
-  })();
-</script>
-</body>
-</html>
+        item.textContent = `🔄 auto-recovered from
