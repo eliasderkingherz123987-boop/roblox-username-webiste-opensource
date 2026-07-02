@@ -5,7 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>snipe · vyzee</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
     body {
       background: #f5f5f7;
@@ -28,71 +32,89 @@
       border: 1px solid #f0f0f2;
       transition: transform 0.08s cubic-bezier(0.2, 0.9, 0.4, 1);
       will-change: transform;
-      cursor: pointer;
-      position: relative;
     }
 
-    /* ===== CLICK TO START OVERLAY ===== */
-    .start-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(255, 255, 255, 0.92);
-      backdrop-filter: blur(8px);
-      border-radius: 28px;
+    /* ===== MUSIC PLAYER - CLEAN & SIMPLE ===== */
+    .music-section {
+      margin-bottom: 20px;
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 18px;
+      background: #f8f8fa;
+      border-radius: 16px;
+      border: 1px solid #f0f0f2;
+    }
+
+    .music-section .play-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #007aff;
+      color: white;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 10;
-      gap: 12px;
-      transition: opacity 0.6s ease;
+      transition: 0.15s;
+      flex-shrink: 0;
     }
 
-    .start-overlay.hidden {
-      opacity: 0;
-      pointer-events: none;
+    .music-section .play-btn:hover {
+      background: #0066d9;
+      transform: scale(0.95);
     }
 
-    .start-overlay .big-icon {
-      font-size: 4rem;
-      line-height: 1;
+    .music-section .play-btn.playing {
+      background: #ff3b30;
     }
 
-    .start-overlay .title {
-      font-size: 1.6rem;
+    .music-section .track-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .music-section .track-name {
       font-weight: 600;
+      font-size: 0.95rem;
       color: #1c1c1e;
     }
 
-    .start-overlay .subtitle {
+    .music-section .track-artist {
+      font-size: 0.8rem;
       color: #6e6e73;
-      font-size: 0.95rem;
     }
 
-    .start-overlay .hint {
+    .music-section .status-indicator {
+      font-size: 0.7rem;
       color: #8e8e93;
-      font-size: 0.75rem;
-      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
-    /* ===== MUSIC PLAYER (hidden but functional) ===== */
-    .music-wrap {
-      margin-bottom: 20px;
-      border-radius: 16px;
-      overflow: hidden;
-      background: #f8f8fa;
-      border: 1px solid #f0f0f2;
-      position: relative;
+    .music-section .status-indicator .dot {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #8e8e93;
     }
 
-    .music-wrap iframe {
-      display: block;
-      width: 100%;
-      height: 72px;
-      border: none;
+    .music-section .status-indicator .dot.active {
+      background: #34c759;
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .music-section iframe {
+      display: none;
     }
 
     /* ===== HEADER ===== */
@@ -263,11 +285,6 @@
       animation: pulse 0.5s infinite;
     }
 
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
-    }
-
     /* ===== STATS ===== */
     .stats {
       display: grid;
@@ -412,46 +429,43 @@
       .logo { font-size: 1.1rem; }
       .result-item { font-size: 0.8rem; flex-wrap: wrap; gap: 6px; }
       .result-item .name { min-width: 60px; }
-      .start-overlay .title { font-size: 1.2rem; }
-      .start-overlay .big-icon { font-size: 3rem; }
+      .music-section { flex-wrap: wrap; }
     }
   </style>
 </head>
 <body>
 
 <div class="container" id="card">
-  <!-- ===== CLICK TO START OVERLAY ===== -->
-  <div class="start-overlay" id="startOverlay">
-    <div class="big-icon">🎵</div>
-    <div class="title">Click anywhere to start</div>
-    <div class="subtitle">VYZEE · Sophie Remix</div>
-    <div class="hint">then press Start to begin sniping</div>
-  </div>
-
-  <!-- ===== MUSIC PLAYER ===== -->
-  <div class="music-wrap">
+  <!-- ===== MUSIC PLAYER - CLEAN & SIMPLE ===== -->
+  <div class="music-section">
+    <button class="play-btn" id="playBtn">▶</button>
+    <div class="track-info">
+      <div class="track-name">VYZEE (Extended Remix)</div>
+      <div class="track-artist">sweetiele · mikeeysmind</div>
+    </div>
+    <div class="status-indicator">
+      <span class="dot" id="musicDot"></span>
+      <span id="musicStatus">paused</span>
+    </div>
     <iframe id="musicIframe" 
-      src="https://www.youtube.com/embed/jViw4WrCHIo?enablejsapi=1" 
-      title="VYZEE - SOPHIE (Extended Remix)(slowed & reverb)"
-      allow="encrypted-media"
-      allowfullscreen>
+      src="https://www.youtube.com/embed/jViw4WrCHIo?enablejsapi=1"
+      allow="encrypted-media">
     </iframe>
   </div>
 
   <!-- ===== HEADER ===== -->
   <div class="header">
     <div class="logo">
-      <span class="accent">◆</span> vyzee <span class="badge">heavy</span>
+      <span class="accent">◆</span> vyzee <span class="badge">snipe</span>
     </div>
     <div><span class="speed" id="speedDisplay">⚡ 0/s</span></div>
   </div>
-  <div class="sub">type <strong>1</strong> for words · <strong>2</strong> for any chars · auto‑recovers from rate limits</div>
+  <div class="sub">type <strong>1</strong> for words · <strong>2</strong> for any chars</div>
 
   <!-- ===== STATUS BAR ===== -->
   <div class="status-bar">
     <span><span class="status-dot idle" id="statusDot"></span><span id="statusText">idle</span></span>
     <span id="rateLimitCount" style="margin-left:auto;">🚫 rate limits: 0</span>
-    <span id="recoveryCount">🔄 recoveries: 0</span>
   </div>
 
   <!-- ===== MODE ===== -->
@@ -477,13 +491,12 @@
 
   <!-- ===== RESULTS ===== -->
   <div class="result" id="resultBox">
-    <div class="empty-state">click the card to start music · then press Start</div>
+    <div class="empty-state">press Start to begin sniping · click ▶ for music</div>
   </div>
 
   <!-- ===== FOOTER ===== -->
   <div class="footer">
     <span class="db-status" id="dbStatus">💾 DB: 0 cached</span>
-    <span>🔄 auto‑refresh on rate limit</span>
     <span>🎵 vyzee · sophie remix</span>
   </div>
 </div>
@@ -492,8 +505,10 @@
   (function() {
     // ----- DOM refs -----
     const card = document.getElementById('card');
-    const startOverlay = document.getElementById('startOverlay');
+    const playBtn = document.getElementById('playBtn');
     const musicIframe = document.getElementById('musicIframe');
+    const musicDot = document.getElementById('musicDot');
+    const musicStatus = document.getElementById('musicStatus');
     const modeBtns = document.querySelectorAll('.mode-btn');
     const startBtn = document.getElementById('startBtn');
     const stopBtn = document.getElementById('stopBtn');
@@ -508,42 +523,34 @@
     const statusText = document.getElementById('statusText');
     const statusDot = document.getElementById('statusDot');
     const rateLimitCountEl = document.getElementById('rateLimitCount');
-    const recoveryCountEl = document.getElementById('recoveryCount');
 
     // ============================================================
-    // ===== CLICK ANYWHERE TO START MUSIC =====
+    // ===== MUSIC PLAYER - SIMPLE TOGGLE =====
     // ============================================================
-    let musicStarted = false;
+    let isPlaying = false;
 
-    function startMusic() {
-      if (musicStarted) return;
-      musicStarted = true;
-      
-      // Reload iframe with autoplay
-      const src = musicIframe.src;
-      musicIframe.src = '';
-      musicIframe.src = src + '&autoplay=1';
-      
-      // Hide overlay with smooth transition
-      startOverlay.classList.add('hidden');
-      
-      // Remove overlay from DOM after transition
-      setTimeout(() => {
-        startOverlay.style.display = 'none';
-      }, 700);
-    }
-
-    // Click card to start music
-    card.addEventListener('click', function(e) {
-      // Don't trigger if clicking on buttons or interactive elements
-      if (e.target.closest('button') || e.target.closest('.mode-btn')) return;
-      startMusic();
-    });
-
-    // Also allow clicking the overlay directly
-    startOverlay.addEventListener('click', function(e) {
-      e.stopPropagation();
-      startMusic();
+    playBtn.addEventListener('click', function() {
+      if (!isPlaying) {
+        // Start music
+        const src = musicIframe.src;
+        musicIframe.src = '';
+        musicIframe.src = src + '&autoplay=1';
+        isPlaying = true;
+        playBtn.textContent = '⏹';
+        playBtn.classList.add('playing');
+        musicDot.className = 'dot active';
+        musicStatus.textContent = 'playing';
+      } else {
+        // Stop music - just reload without autoplay
+        const src = musicIframe.src.replace('&autoplay=1', '');
+        musicIframe.src = '';
+        musicIframe.src = src;
+        isPlaying = false;
+        playBtn.textContent = '▶';
+        playBtn.classList.remove('playing');
+        musicDot.className = 'dot';
+        musicStatus.textContent = 'paused';
+      }
     });
 
     // ============================================================
@@ -658,17 +665,12 @@
     let requestQueue = [];
     let isProcessingQueue = false;
     let generatorInterval = null;
-    let checkCountSinceRefresh = 0;
-    const AUTO_REFRESH_AT = 500;
     let rateLimitCount = 0;
-    let recoveryCount = 0;
-    let isRecovering = false;
 
     function setStatus(state, message) {
       statusDot.className = 'status-dot ' + state;
       statusText.textContent = message || state;
       rateLimitCountEl.textContent = `🚫 rate limits: ${rateLimitCount}`;
-      recoveryCountEl.textContent = `🔄 recoveries: ${recoveryCount}`;
     }
 
     // ----- Mode switching -----
@@ -752,45 +754,6 @@
       }
     }
 
-    // ----- Handle rate limit -----
-    function handleRateLimit() {
-      if (isRecovering) return;
-      isRecovering = true;
-      rateLimitCount++;
-      setStatus('rate-limited', 'rate limited — refreshing...');
-      
-      const item = document.createElement('div');
-      item.className = 'result-item';
-      item.style.background = '#fff5e6';
-      item.style.justifyContent = 'center';
-      item.style.color = '#b27200';
-      item.textContent = `🚫 RATE LIMITED · refreshing in 3s (recovery #${recoveryCount + 1})`;
-      resultBox.appendChild(item);
-      resultBox.scrollTop = resultBox.scrollHeight;
-
-      const mode = currentMode;
-      
-      if (isRunning) {
-        shouldStop = true;
-        isRunning = false;
-        if (generatorInterval) {
-          clearInterval(generatorInterval);
-          generatorInterval = null;
-        }
-        requestQueue = [];
-      }
-
-      setTimeout(() => {
-        recoveryCount++;
-        setStatus('running', 'recovered — restarting...');
-        isRecovering = false;
-        
-        localStorage.setItem('vyzee_auto_restart', 'true');
-        localStorage.setItem('vyzee_auto_mode', mode);
-        location.reload();
-      }, 3000);
-    }
-
     // ----- Process queue -----
     async function processQueue() {
       if (isProcessingQueue || !isRunning || requestQueue.length === 0) {
@@ -842,7 +805,6 @@
 
           totalChecked++;
           speedCounter++;
-          checkCountSinceRefresh++;
 
           if (available) {
             totalAvailable++;
@@ -870,16 +832,14 @@
 
           updateStats();
 
-          if (checkCountSinceRefresh >= AUTO_REFRESH_AT && isRunning) {
-            stopGeneration();
-            setTimeout(() => { location.reload(); }, 400);
-            return;
-          }
-
         } catch (err) {
           if (err.message === 'RATE_LIMITED') {
             addResult(username, 'rate-limited', 'Rate limited');
-            handleRateLimit();
+            rateLimitCount++;
+            setStatus('rate-limited', `rate limited (${rateLimitCount})`);
+            // Wait 2 seconds then continue
+            await new Promise(r => setTimeout(r, 2000));
+            setStatus('running', 'sniping...');
             activeRequests--;
             return;
           }
@@ -950,18 +910,11 @@
     function startGeneration() {
       if (isRunning) return;
       
-      // Auto-start music if not started
-      if (!musicStarted) {
-        startMusic();
-      }
-      
       isRunning = true;
       shouldStop = false;
       startBtn.disabled = true;
       stopBtn.disabled = false;
       setStatus('running', 'sniping...');
-
-      checkCountSinceRefresh = 0;
 
       if (resultBox.children.length === 0 || resultBox.querySelector('.empty-state')) {
         resultBox.innerHTML = '';
@@ -1031,35 +984,7 @@
         totalTaken = 0;
         updateStats();
         rateLimitCount = 0;
-        recoveryCount = 0;
         setStatus('idle', 'idle');
-      }
-    }
-
-    // ----- Auto-restart on load -----
-    function checkAutoRestart() {
-      const shouldAutoStart = localStorage.getItem('vyzee_auto_restart');
-      if (shouldAutoStart === 'true') {
-        localStorage.removeItem('vyzee_auto_restart');
-        const mode = localStorage.getItem('vyzee_auto_mode') || 'words';
-        localStorage.removeItem('vyzee_auto_mode');
-        
-        setActiveMode(mode);
-        
-        const item = document.createElement('div');
-        item.className = 'result-item';
-        item.style.background = '#f0f8f0';
-        item.style.justifyContent = 'center';
-        item.style.color = '#1e7a3a';
-        item.textContent = `🔄 auto-recovered from rate limit · resuming sniping...`;
-        resultBox.innerHTML = '';
-        resultBox.appendChild(item);
-        
-        // Auto-start music too
-        setTimeout(() => {
-          startMusic();
-          startGeneration();
-        }, 1000);
       }
     }
 
@@ -1072,7 +997,6 @@
     setActiveMode('words');
     updateDBStatus();
     setStatus('idle', 'idle');
-    checkAutoRestart();
   })();
 </script>
 </body>
