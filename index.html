@@ -5,12 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>snipe · vyzee</title>
   <style>
-    /* ===== CLEAN · MINIMAL ===== */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
       background: #f5f5f7;
@@ -21,10 +16,8 @@
       align-items: center;
       padding: 20px;
       color: #1c1c1e;
-      cursor: default;
     }
 
-    /* ===== CARD ===== */
     .container {
       max-width: 780px;
       width: 100%;
@@ -33,16 +26,59 @@
       padding: 32px 28px 28px;
       box-shadow: 0 8px 40px rgba(0, 0, 0, 0.04), 0 2px 8px rgba(0, 0, 0, 0.02);
       border: 1px solid #f0f0f2;
-      
-      /* ===== HEAVY CURSOR FOLLOW ===== */
       transition: transform 0.08s cubic-bezier(0.2, 0.9, 0.4, 1);
       will-change: transform;
-      
-      /* initial position */
-      transform: translate(0px, 0px) rotate(0deg);
+      cursor: pointer;
+      position: relative;
     }
 
-    /* ===== MUSIC PLAYER ===== */
+    /* ===== CLICK TO START OVERLAY ===== */
+    .start-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(8px);
+      border-radius: 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      gap: 12px;
+      transition: opacity 0.6s ease;
+    }
+
+    .start-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .start-overlay .big-icon {
+      font-size: 4rem;
+      line-height: 1;
+    }
+
+    .start-overlay .title {
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: #1c1c1e;
+    }
+
+    .start-overlay .subtitle {
+      color: #6e6e73;
+      font-size: 0.95rem;
+    }
+
+    .start-overlay .hint {
+      color: #8e8e93;
+      font-size: 0.75rem;
+      margin-top: 4px;
+    }
+
+    /* ===== MUSIC PLAYER (hidden but functional) ===== */
     .music-wrap {
       margin-bottom: 20px;
       border-radius: 16px;
@@ -50,12 +86,6 @@
       background: #f8f8fa;
       border: 1px solid #f0f0f2;
       position: relative;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .music-wrap:hover {
-      background: #f0f0f2;
     }
 
     .music-wrap iframe {
@@ -63,41 +93,6 @@
       width: 100%;
       height: 72px;
       border: none;
-      pointer-events: none;
-    }
-
-    .music-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(4px);
-      transition: opacity 0.4s ease;
-      border-radius: 16px;
-      gap: 10px;
-      font-weight: 500;
-      font-size: 0.9rem;
-      color: #1c1c1e;
-    }
-
-    .music-overlay.hidden {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .music-overlay .play-icon {
-      font-size: 1.8rem;
-      line-height: 1;
-    }
-
-    .music-overlay .hint {
-      color: #6e6e73;
-      font-size: 0.75rem;
     }
 
     /* ===== HEADER ===== */
@@ -120,11 +115,7 @@
       color: #1c1c1e;
     }
 
-    .logo .accent {
-      color: #007aff;
-      font-weight: 700;
-    }
-
+    .logo .accent { color: #007aff; font-weight: 700; }
     .badge {
       background: #f0f0f2;
       padding: 3px 14px;
@@ -140,9 +131,6 @@
       color: #6e6e73;
       font-size: 0.85rem;
       margin-bottom: 22px;
-      padding-left: 0;
-      border-left: none;
-      background: none;
     }
 
     /* ===== MODE SWITCH ===== */
@@ -176,9 +164,7 @@
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     }
 
-    .mode-btn:hover:not(.active) {
-      color: #1c1c1e;
-    }
+    .mode-btn:hover:not(.active) { color: #1c1c1e; }
 
     /* ===== CONTROLS ===== */
     .controls {
@@ -242,9 +228,7 @@
       min-width: 70px;
     }
 
-    .btn-clear:hover:not(:disabled) {
-      background: #f5f5f7;
-    }
+    .btn-clear:hover:not(:disabled) { background: #f5f5f7; }
 
     /* ===== STATUS BAR ===== */
     .status-bar {
@@ -269,9 +253,7 @@
       margin-right: 4px;
     }
 
-    .status-dot.idle {
-      background: #8e8e93;
-    }
+    .status-dot.idle { background: #8e8e93; }
     .status-dot.running {
       background: #34c759;
       animation: pulse 1s infinite;
@@ -337,13 +319,8 @@
       scrollbar-color: #d1d1d6 transparent;
     }
 
-    .result::-webkit-scrollbar {
-      width: 4px;
-    }
-    .result::-webkit-scrollbar-thumb {
-      background: #d1d1d6;
-      border-radius: 10px;
-    }
+    .result::-webkit-scrollbar { width: 4px; }
+    .result::-webkit-scrollbar-thumb { background: #d1d1d6; border-radius: 10px; }
 
     .result-item {
       display: flex;
@@ -435,26 +412,30 @@
       .logo { font-size: 1.1rem; }
       .result-item { font-size: 0.8rem; flex-wrap: wrap; gap: 6px; }
       .result-item .name { min-width: 60px; }
-      .music-overlay .hint { display: none; }
+      .start-overlay .title { font-size: 1.2rem; }
+      .start-overlay .big-icon { font-size: 3rem; }
     }
   </style>
 </head>
 <body>
 
 <div class="container" id="card">
+  <!-- ===== CLICK TO START OVERLAY ===== -->
+  <div class="start-overlay" id="startOverlay">
+    <div class="big-icon">🎵</div>
+    <div class="title">Click anywhere to start</div>
+    <div class="subtitle">VYZEE · Sophie Remix</div>
+    <div class="hint">then press Start to begin sniping</div>
+  </div>
+
   <!-- ===== MUSIC PLAYER ===== -->
-  <div class="music-wrap" id="musicWrap">
+  <div class="music-wrap">
     <iframe id="musicIframe" 
       src="https://www.youtube.com/embed/jViw4WrCHIo?enablejsapi=1" 
       title="VYZEE - SOPHIE (Extended Remix)(slowed & reverb)"
       allow="encrypted-media"
       allowfullscreen>
     </iframe>
-    <div class="music-overlay" id="musicOverlay">
-      <span class="play-icon">▶</span>
-      <span>Play VYZEE</span>
-      <span class="hint">· click to start music</span>
-    </div>
   </div>
 
   <!-- ===== HEADER ===== -->
@@ -496,7 +477,7 @@
 
   <!-- ===== RESULTS ===== -->
   <div class="result" id="resultBox">
-    <div class="empty-state">press Start to begin · click the player for music</div>
+    <div class="empty-state">click the card to start music · then press Start</div>
   </div>
 
   <!-- ===== FOOTER ===== -->
@@ -511,6 +492,8 @@
   (function() {
     // ----- DOM refs -----
     const card = document.getElementById('card');
+    const startOverlay = document.getElementById('startOverlay');
+    const musicIframe = document.getElementById('musicIframe');
     const modeBtns = document.querySelectorAll('.mode-btn');
     const startBtn = document.getElementById('startBtn');
     const stopBtn = document.getElementById('stopBtn');
@@ -527,17 +510,97 @@
     const rateLimitCountEl = document.getElementById('rateLimitCount');
     const recoveryCountEl = document.getElementById('recoveryCount');
 
-    // ----- Music player controls -----
-    const musicWrap = document.getElementById('musicWrap');
-    const musicOverlay = document.getElementById('musicOverlay');
-    const musicIframe = document.getElementById('musicIframe');
+    // ============================================================
+    // ===== CLICK ANYWHERE TO START MUSIC =====
+    // ============================================================
+    let musicStarted = false;
 
-    musicWrap.addEventListener('click', function() {
-      musicOverlay.classList.add('hidden');
+    function startMusic() {
+      if (musicStarted) return;
+      musicStarted = true;
+      
+      // Reload iframe with autoplay
       const src = musicIframe.src;
       musicIframe.src = '';
       musicIframe.src = src + '&autoplay=1';
+      
+      // Hide overlay with smooth transition
+      startOverlay.classList.add('hidden');
+      
+      // Remove overlay from DOM after transition
+      setTimeout(() => {
+        startOverlay.style.display = 'none';
+      }, 700);
+    }
+
+    // Click card to start music
+    card.addEventListener('click', function(e) {
+      // Don't trigger if clicking on buttons or interactive elements
+      if (e.target.closest('button') || e.target.closest('.mode-btn')) return;
+      startMusic();
     });
+
+    // Also allow clicking the overlay directly
+    startOverlay.addEventListener('click', function(e) {
+      e.stopPropagation();
+      startMusic();
+    });
+
+    // ============================================================
+    // ===== HEAVY CURSOR FOLLOWER =====
+    // ============================================================
+    let mouseX = window.innerWidth / 2;
+    let mouseY = window.innerHeight / 2;
+    let currentX = 0, currentY = 0;
+    let currentRotateX = 0, currentRotateY = 0;
+    let targetX = 0, targetY = 0;
+    let targetRotateX = 0, targetRotateY = 0;
+
+    document.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    });
+
+    document.addEventListener('touchmove', (e) => {
+      const touch = e.touches[0];
+      if (touch) {
+        mouseX = touch.clientX;
+        mouseY = touch.clientY;
+      }
+    }, { passive: true });
+
+    function updateCardPosition() {
+      const rect = card.getBoundingClientRect();
+      const cardCenterX = rect.left + rect.width / 2;
+      const cardCenterY = rect.top + rect.height / 2;
+
+      const dx = (mouseX - cardCenterX) / window.innerWidth;
+      const dy = (mouseY - cardCenterY) / window.innerHeight;
+
+      const maxTranslate = 14;
+      const maxRotate = 3.5;
+
+      targetX = dx * maxTranslate;
+      targetY = dy * maxTranslate;
+      targetRotateY = dx * maxRotate;
+      targetRotateX = -dy * maxRotate;
+
+      const damping = 0.12;
+      currentX += (targetX - currentX) * damping;
+      currentY += (targetY - currentY) * damping;
+      currentRotateX += (targetRotateX - currentRotateX) * damping;
+      currentRotateY += (targetRotateY - currentRotateY) * damping;
+
+      card.style.transform = `
+        translate(${currentX}px, ${currentY}px)
+        rotateX(${currentRotateX}deg)
+        rotateY(${currentRotateY}deg)
+      `;
+
+      requestAnimationFrame(updateCardPosition);
+    }
+
+    updateCardPosition();
 
     // ----- Database -----
     const DB_KEY = 'vyzee_sniper_db';
@@ -607,75 +670,6 @@
       rateLimitCountEl.textContent = `🚫 rate limits: ${rateLimitCount}`;
       recoveryCountEl.textContent = `🔄 recoveries: ${recoveryCount}`;
     }
-
-    // ============================================================
-    // ===== HEAVY CURSOR FOLLOWER – leans toward cursor =====
-    // ============================================================
-    let mouseX = window.innerWidth / 2;
-    let mouseY = window.innerHeight / 2;
-    let currentX = 0;
-    let currentY = 0;
-    let currentRotateX = 0;
-    let currentRotateY = 0;
-    let targetX = 0;
-    let targetY = 0;
-    let targetRotateX = 0;
-    let targetRotateY = 0;
-
-    // Track mouse position
-    document.addEventListener('mousemove', (e) => {
-      mouseX = e.clientX;
-      mouseY = e.clientY;
-    });
-
-    // Also track touch for mobile
-    document.addEventListener('touchmove', (e) => {
-      const touch = e.touches[0];
-      if (touch) {
-        mouseX = touch.clientX;
-        mouseY = touch.clientY;
-      }
-    }, { passive: true });
-
-    // Smooth animation loop
-    function updateCardPosition() {
-      const rect = card.getBoundingClientRect();
-      const cardCenterX = rect.left + rect.width / 2;
-      const cardCenterY = rect.top + rect.height / 2;
-
-      // Calculate distance from mouse to card center (normalized)
-      const dx = (mouseX - cardCenterX) / window.innerWidth;
-      const dy = (mouseY - cardCenterY) / window.innerHeight;
-
-      // HEAVY feel: limited movement + rotation
-      // Max translation: 12px, max rotation: 3deg
-      const maxTranslate = 14;
-      const maxRotate = 3.5;
-
-      targetX = dx * maxTranslate;
-      targetY = dy * maxTranslate;
-      targetRotateY = dx * maxRotate; // rotate toward mouse horizontally
-      targetRotateX = -dy * maxRotate; // rotate toward mouse vertically
-
-      // Smooth interpolation (like inertia / heaviness)
-      const damping = 0.12; // lower = heavier/slower
-      currentX += (targetX - currentX) * damping;
-      currentY += (targetY - currentY) * damping;
-      currentRotateX += (targetRotateX - currentRotateX) * damping;
-      currentRotateY += (targetRotateY - currentRotateY) * damping;
-
-      // Apply transform
-      card.style.transform = `
-        translate(${currentX}px, ${currentY}px)
-        rotateX(${currentRotateX}deg)
-        rotateY(${currentRotateY}deg)
-      `;
-
-      requestAnimationFrame(updateCardPosition);
-    }
-
-    // Start the follower
-    updateCardPosition();
 
     // ----- Mode switching -----
     function setActiveMode(mode) {
@@ -955,6 +949,12 @@
     // ----- Start -----
     function startGeneration() {
       if (isRunning) return;
+      
+      // Auto-start music if not started
+      if (!musicStarted) {
+        startMusic();
+      }
+      
       isRunning = true;
       shouldStop = false;
       startBtn.disabled = true;
@@ -1051,4 +1051,29 @@
         item.style.background = '#f0f8f0';
         item.style.justifyContent = 'center';
         item.style.color = '#1e7a3a';
-        item.textContent = `🔄 auto-recovered from
+        item.textContent = `🔄 auto-recovered from rate limit · resuming sniping...`;
+        resultBox.innerHTML = '';
+        resultBox.appendChild(item);
+        
+        // Auto-start music too
+        setTimeout(() => {
+          startMusic();
+          startGeneration();
+        }, 1000);
+      }
+    }
+
+    // ----- Events -----
+    startBtn.addEventListener('click', startGeneration);
+    stopBtn.addEventListener('click', stopGeneration);
+    clearBtn.addEventListener('click', clearDatabase);
+
+    // ----- Init -----
+    setActiveMode('words');
+    updateDBStatus();
+    setStatus('idle', 'idle');
+    checkAutoRestart();
+  })();
+</script>
+</body>
+</html>
